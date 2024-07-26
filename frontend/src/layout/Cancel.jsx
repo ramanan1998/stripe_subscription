@@ -1,4 +1,3 @@
-import React from "react";
 import cancel from "../assets/cancel.png";
 
 const Cancel = () => {

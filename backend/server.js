@@ -8,16 +8,17 @@ const bodyParser = require("body-parser");
 const moment = require("moment");
 const port = 5000
 
+
 app.use(express.json())
 app.use(bodyParser.json())
 
 const [basic, pro, business] = 
-['price_1NR9KHSI3ANpgzrSB37eQwwd', 'price_1NR9LTSI3ANpgzrSHjUbURWg', 'price_1NR9MHSI3ANpgzrSikIVEg6W'];
+['price_1PgS3u2MeXyOZZexwqpIngab', 'price_1PgS5T2MeXyOZZexD48EBw1Z', 'price_1PgS5m2MeXyOZZexd1oE8au1'];
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://stripe-subscription-2f4de-default-rtdb.firebaseio.com"
-  });
+    databaseURL: "https://stripe-test-d3a7b-default-rtdb.firebaseio.com/"
+});
   
 
 app.use(
@@ -27,7 +28,6 @@ app.use(
 )
 
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
-
 
 /*********** create subscription ************/
 
@@ -43,7 +43,7 @@ const stripeSession = async(plan) => {
                 },
             ],
             success_url: "http://localhost:5173/success",
-            cancel_url: "http://localhost:5173/cancel"
+            cancel_url: "http://localhost:5173/cancel",
         });
         return session;
     }catch (e){
@@ -63,15 +63,18 @@ app.post("/api/v1/create-subscription-checkout-session", async(req, res) => {
         const session = await stripeSession(planId);
         const user = await admin.auth().getUser(customerId);
 
-        await admin.database().ref("users").child(user.uid).update({
+        const process = await admin.database().ref("users").child(user.uid).update({
             subscription: {
                 sessionId: session.id
             }
         });
-        return res.json({session})
+
+        console.log(process)
+        return res.status(200).json({session})
 
     }catch(error){
-        res.send(error)
+        console.log(error)
+        return res.status(500).send(error)
     }
 })
 
@@ -82,6 +85,8 @@ app.post("/api/v1/payment-success", async (req, res) => {
   
     try {
       const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+      console.log(session)
   
       if (session.payment_status === 'paid') {
           const subscriptionId = session.subscription;

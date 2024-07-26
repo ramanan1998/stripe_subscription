@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import basic from "../assets/basic.svg";
 import pro from "../assets/pro.svg";
 import business from "../assets/business.svg";
@@ -35,8 +35,10 @@ const Home = () => {
         setUserId(user.uid);
         setUserName(user.displayName);
         const userRef = firebase.database().ref("users/" + user.uid);
+       
         userRef.on("value", (snapshot) => {
           const user = snapshot.val();
+          console.log(user)
           if (user) {
             setPlanType(user.subscription.planType || "");
           }
@@ -66,7 +68,7 @@ const Home = () => {
         window.location = session.url;
       })
       .catch((e) => {
-        console.log(e.error);
+        console.log(e);
       });
   };
 
